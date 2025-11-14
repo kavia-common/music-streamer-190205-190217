@@ -1,0 +1,42 @@
+[
+  {
+    "id": "track-1",
+    "title": "Acoustic Breeze",
+    "artist": "Benjamin Tissot",
+    "durationSec": 210,
+    "audioUrl": "https://www.bensound.com/bensound-music/bensound-acousticbreeze.mp3",
+    "coverUrl": "/assets/figmaimages/figma_image_0_48.png"
+  },
+  {
+    "id": "track-2",
+    "title": "Creative Minds",
+    "artist": "Benjamin Tissot",
+    "durationSec": 308,
+    "audioUrl": "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3",
+    "coverUrl": "/assets/figmaimages/figma_image_0_57.png"
+  },
+  {
+    "id": "track-3",
+    "title": "Sunny",
+    "artist": "Benjamin Tissot",
+    "durationSec": 121,
+    "audioUrl": "https://www.bensound.com/bensound-music/bensound-sunny.mp3",
+    "coverUrl": "/assets/figmaimages/figma_image_0_66.png"
+  },
+  {
+    "id": "track-4",
+    "title": "Jazz Comedy",
+    "artist": "Benjamin Tissot",
+    "durationSec": 153,
+    "audioUrl": "https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3",
+    "coverUrl": "/assets/figmaimages/figma_image_0_75.png"
+  },
+  {
+    "id": "track-5",
+    "title": "Once Again",
+    "artist": "Benjamin Tissot",
+    "durationSec": 201,
+    "audioUrl": "https://www.bensound.com/bensound-music/bensound-onceagain.mp3",
+    "coverUrl": "/assets/figmaimages/figma_image_0_84.png"
+  }
+]

@@ -1,10 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { getTracks } from '../services/tracksService';
+import { formatTime } from '../utils/formatTime';
 
 /**
  * PUBLIC_INTERFACE
  * SpotifyClone component renders the extracted Figma screen markup for the Spotify UI.
  * It injects the precise HTML structure while loading CSS and JS from /assets to ensure
  * pixel-perfect rendering and correct behavior of interactions defined in the plain JS file.
+ * It also wires a bottom playback bar to an actual audio player while preserving all classes.
  */
 function SpotifyClone() {
   // Inject the required CSS via link tags in the document head and ensure cleanup on unmount
@@ -36,6 +40,44 @@ function SpotifyClone() {
       });
     };
   }, []);
+
+  // Audio player state & data load
+  const player = useAudioPlayer([], 0);
+  const { currentTrack, isPlaying, currentTime, duration, volume, muted } = player;
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const tracks = await getTracks();
+      if (!mounted) return;
+      player.loadTracks(tracks, 0, false);
+    })();
+    return () => { mounted = false; };
+  }, [player]);
+
+  // Keyboard handlers for play/pause (Space/Enter), mute (m), next/prev (ArrowRight/ArrowLeft)
+  const onKeyControls = useCallback((e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      player.togglePlay();
+    } else if (e.key.toLowerCase() === 'm') {
+      e.preventDefault();
+      player.toggleMute();
+    } else if (e.key === 'ArrowRight' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      player.next();
+    } else if (e.key === 'ArrowLeft' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      player.prev();
+    }
+  }, [player]);
+
+  const progressPercent = useMemo(() => {
+    if (!duration) return 0;
+    return Math.min(100, Math.max(0, (currentTime / duration) * 100));
+  }, [currentTime, duration]);
+
+  const volumePercent = useMemo(() => Math.round((volume || 0) * 100), [volume]);
 
   // Note: We keep figmaimages/ paths exactly as they appear in the design
   // by serving them under /assets/figmaimages from public.
@@ -228,12 +270,13 @@ function SpotifyClone() {
         </div>
       </header>
 
-      {/* Bottom promo bar */}
+      {/* Bottom promo bar - enhanced to include a playback bar without changing existing classes or layout */}
       <section
         id="bottombar"
         className="bottombar"
         style={{ left: '0px', top: '832.21875px', width: '1440px', height: '67.78125px', position: 'absolute' }}
-        aria-label="Preview banner"
+        aria-label="Preview banner and player controls"
+        onKeyDown={onKeyControls}
       >
         <div className="progress" style={{ left: '1327px', top: '898px', width: '93px', height: '4px', position: 'absolute' }} aria-hidden="true"></div>
 
@@ -249,13 +292,119 @@ function SpotifyClone() {
             justifyContent: 'space-between',
           }}
         >
+          {/* Left: Track metadata (artwork, title, artist) - keep classnames to avoid CSS shifts */}
           <div className="bottom-texts" style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '636.125px' }}>
-            <span className="bt-title">Preview of Spotify</span>
-            <span className="bt-sub">Sign up to get unlimited songs and podcasts with occasional ads. No credit card needed.</span>
+            <span className="bt-title">
+              {currentTrack ? currentTrack.title : 'Preview of Spotify'}
+            </span>
+            <span className="bt-sub">
+              {currentTrack ? currentTrack.artist : 'Sign up to get unlimited songs and podcasts with occasional ads. No credit card needed.'}
+            </span>
           </div>
-          <button type="button" className="btn-accent btn-cta" style={{ height: '48px' }}>
-            Sign up free
-          </button>
+
+          {/* Center: Controls and progress */}
+          <div
+            className="player-center"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              flex: '1',
+              margin: '0 24px'
+            }}
+          >
+            <div className="controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button
+                type="button"
+                className="circle-btn"
+                aria-label="Previous track"
+                onClick={player.prev}
+              >
+                <span aria-hidden="true">⏮</span>
+              </button>
+              <button
+                type="button"
+                className="circle-btn"
+                onClick={player.togglePlay}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+                aria-pressed={isPlaying}
+              >
+                <span aria-hidden="true">{isPlaying ? '⏸' : '▶️'}</span>
+              </button>
+              <button
+                type="button"
+                className="circle-btn"
+                aria-label="Next track"
+                onClick={player.next}
+              >
+                <span aria-hidden="true">⏭</span>
+              </button>
+            </div>
+
+            <div
+              className="progress-row"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                minWidth: '420px',
+                maxWidth: '640px',
+                width: '40vw'
+              }}
+            >
+              <span className="bt-sub" aria-label="Elapsed time">{formatTime(currentTime)}</span>
+              <input
+                type="range"
+                min={0}
+                max={Math.max(1, Math.floor(duration || 0))}
+                value={Math.floor(currentTime || 0)}
+                onChange={(e) => player.seek(Number(e.target.value))}
+                className="progress-input"
+                role="slider"
+                aria-label="Seek"
+                aria-valuemin={0}
+                aria-valuemax={Math.max(1, Math.floor(duration || 0))}
+                aria-valuenow={Math.floor(currentTime || 0)}
+                style={{ width: '100%' }}
+              />
+              <span className="bt-sub" aria-label="Remaining time">
+                {formatTime(Math.max(0, Math.floor((duration || 0) - (currentTime || 0))))}
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Volume and CTA preserved */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              type="button"
+              className="circle-btn"
+              aria-label={muted ? 'Unmute' : 'Mute'}
+              aria-pressed={muted}
+              onClick={player.toggleMute}
+              title={muted ? 'Unmute (M)' : 'Mute (M)'}
+            >
+              <span aria-hidden="true">{muted || volume === 0 ? '🔇' : volumePercent < 50 ? '🔈' : '🔊'}</span>
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={muted ? 0 : volumePercent}
+              onChange={(e) => player.setVolumePercent(Number(e.target.value) / 100)}
+              className="volume-input"
+              role="slider"
+              aria-label="Volume"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={muted ? 0 : volumePercent}
+              style={{ width: '120px' }}
+            />
+            <button type="button" className="btn-accent btn-cta" style={{ height: '48px' }}>
+              Sign up free
+            </button>
+          </div>
         </div>
       </section>
 
