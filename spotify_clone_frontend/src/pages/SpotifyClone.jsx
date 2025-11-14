@@ -43,7 +43,7 @@ function SpotifyClone() {
 
   // Audio player state & data load
   const player = useAudioPlayer([], 0);
-  const { currentTrack, isPlaying, currentTime, duration, volume, muted } = player;
+  const { currentTrack, isPlaying, currentTime, duration, volume, muted, seekBySeconds, adjustVolumeBy, next, prev, togglePlay, toggleMute } = player;
 
   useEffect(() => {
     let mounted = true;
@@ -55,22 +55,79 @@ function SpotifyClone() {
     return () => { mounted = false; };
   }, [player]);
 
-  // Keyboard handlers for play/pause (Space/Enter), mute (m), next/prev (ArrowRight/ArrowLeft)
-  const onKeyControls = useCallback((e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      player.togglePlay();
-    } else if (e.key.toLowerCase() === 'm') {
-      e.preventDefault();
-      player.toggleMute();
-    } else if (e.key === 'ArrowRight' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      player.next();
-    } else if (e.key === 'ArrowLeft' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      player.prev();
-    }
-  }, [player]);
+  // Helper to determine if key events should be ignored (typing in inputs/textareas or contenteditable)
+  const isTypingContext = (target) => {
+    if (!target) return false;
+    const tag = (target.tagName || '').toLowerCase();
+    const editable = target.isContentEditable;
+    return editable || tag === 'input' || tag === 'textarea' || tag === 'select';
+  };
+
+  // Global keyboard shortcuts (player-scoped): Space toggles, Arrows seek/volume, M mute, N/P next/prev
+  useEffect(() => {
+    const handler = (e) => {
+      // Ignore if focus is inside a text input or editable
+      if (isTypingContext(document.activeElement)) return;
+
+      // Respect native page scrolling with Space when focused on body? For player we override only if not typing.
+      const key = e.key;
+      const lower = (key || '').toLowerCase();
+      const withShift = !!e.shiftKey;
+
+      // Space toggles play/pause
+      if (key === ' ') {
+        e.preventDefault();
+        togglePlay();
+        return;
+      }
+
+      // Arrow Left/Right -> seek -/+ 5s (Shift => 10s)
+      if (key === 'ArrowRight') {
+        e.preventDefault();
+        seekBySeconds(withShift ? 10 : 5);
+        return;
+      }
+      if (key === 'ArrowLeft') {
+        e.preventDefault();
+        seekBySeconds(withShift ? -10 : -5);
+        return;
+      }
+
+      // Arrow Up/Down -> volume +/− 5% (Shift => 10%)
+      if (key === 'ArrowUp') {
+        e.preventDefault();
+        adjustVolumeBy(withShift ? 10 : 5);
+        return;
+      }
+      if (key === 'ArrowDown') {
+        e.preventDefault();
+        adjustVolumeBy(withShift ? -10 : -5);
+        return;
+      }
+
+      // M -> toggle mute
+      if (lower === 'm') {
+        e.preventDefault();
+        toggleMute();
+        return;
+      }
+
+      // N -> next, P -> previous
+      if (lower === 'n') {
+        e.preventDefault();
+        next();
+        return;
+      }
+      if (lower === 'p') {
+        e.preventDefault();
+        prev();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handler, { passive: false });
+    return () => window.removeEventListener('keydown', handler);
+  }, [togglePlay, seekBySeconds, adjustVolumeBy, toggleMute, next, prev]);
 
   const progressPercent = useMemo(() => {
     if (!duration) return 0;
@@ -78,6 +135,12 @@ function SpotifyClone() {
   }, [currentTime, duration]);
 
   const volumePercent = useMemo(() => Math.round((volume || 0) * 100), [volume]);
+
+  // Minimal runtime assertion for ARIA values
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.assert(progressPercent >= 0 && progressPercent <= 100, 'Progress percent out of range', progressPercent);
+  }
 
   // Note: We keep figmaimages/ paths exactly as they appear in the design
   // by serving them under /assets/figmaimages from public.
@@ -275,8 +338,8 @@ function SpotifyClone() {
         id="bottombar"
         className="bottombar"
         style={{ left: '0px', top: '832.21875px', width: '1440px', height: '67.78125px', position: 'absolute' }}
-        aria-label="Preview banner and player controls"
-        onKeyDown={onKeyControls}
+        role="region"
+        aria-label="Now playing"
       >
         <div className="progress" style={{ left: '1327px', top: '898px', width: '93px', height: '4px', position: 'absolute' }} aria-hidden="true"></div>
 
@@ -294,6 +357,17 @@ function SpotifyClone() {
         >
           {/* Left: Track metadata (artwork, title, artist) - keep classnames to avoid CSS shifts */}
           <div className="bottom-texts" style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '636.125px' }}>
+            {/* Optional artwork if track present */}
+            {currentTrack?.coverUrl ? (
+              <img
+                src={currentTrack.coverUrl}
+                alt={`Album art for ${currentTrack.title}`}
+                width="0"
+                height="0"
+                style={{ width: 0, height: 0, position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+                aria-hidden="true"
+              />
+            ) : null}
             <span className="bt-title">
               {currentTrack ? currentTrack.title : 'Preview of Spotify'}
             </span>
@@ -315,19 +389,19 @@ function SpotifyClone() {
               margin: '0 24px'
             }}
           >
-            <div className="controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="controls" role="group" aria-label="Playback controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <button
                 type="button"
                 className="circle-btn"
                 aria-label="Previous track"
-                onClick={player.prev}
+                onClick={prev}
               >
                 <span aria-hidden="true">⏮</span>
               </button>
               <button
                 type="button"
                 className="circle-btn"
-                onClick={player.togglePlay}
+                onClick={togglePlay}
                 aria-label={isPlaying ? 'Pause' : 'Play'}
                 aria-pressed={isPlaying}
               >
@@ -337,7 +411,7 @@ function SpotifyClone() {
                 type="button"
                 className="circle-btn"
                 aria-label="Next track"
-                onClick={player.next}
+                onClick={next}
               >
                 <span aria-hidden="true">⏭</span>
               </button>
@@ -345,6 +419,8 @@ function SpotifyClone() {
 
             <div
               className="progress-row"
+              role="group"
+              aria-label="Seek position"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -367,6 +443,7 @@ function SpotifyClone() {
                 aria-valuemin={0}
                 aria-valuemax={Math.max(1, Math.floor(duration || 0))}
                 aria-valuenow={Math.floor(currentTime || 0)}
+                aria-valuetext={`${formatTime(currentTime)} elapsed of ${formatTime(duration)}`}
                 style={{ width: '100%' }}
               />
               <span className="bt-sub" aria-label="Remaining time">
@@ -376,13 +453,13 @@ function SpotifyClone() {
           </div>
 
           {/* Right: Volume and CTA preserved */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} role="group" aria-label="Volume and sign-up">
             <button
               type="button"
               className="circle-btn"
               aria-label={muted ? 'Unmute' : 'Mute'}
               aria-pressed={muted}
-              onClick={player.toggleMute}
+              onClick={toggleMute}
               title={muted ? 'Unmute (M)' : 'Mute (M)'}
             >
               <span aria-hidden="true">{muted || volume === 0 ? '🔇' : volumePercent < 50 ? '🔈' : '🔊'}</span>
@@ -399,6 +476,7 @@ function SpotifyClone() {
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={muted ? 0 : volumePercent}
+              aria-valuetext={`${muted ? 0 : volumePercent}%`}
               style={{ width: '120px' }}
             />
             <button type="button" className="btn-accent btn-cta" style={{ height: '48px' }}>
@@ -430,7 +508,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_48.png"
                 width="175"
                 height="175"
-                alt="Peaceful Piano cover"
+                alt="Album art for Peaceful Piano"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -447,7 +525,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_57.png"
                 width="175"
                 height="175"
-                alt="Deep Focus cover"
+                alt="Album art for Deep Focus"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -464,7 +542,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_66.png"
                 width="175"
                 height="175"
-                alt="Instrumental Study cover"
+                alt="Album art for Instrumental Study"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -481,7 +559,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_75.png"
                 width="175"
                 height="175"
-                alt="Jazz Vibes cover"
+                alt="Album art for Jazz Vibes"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -498,7 +576,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_84.png"
                 width="176"
                 height="176"
-                alt="Focus Flow cover"
+                alt="Album art for Focus Flow"
                 style={{ width: '175.8125px', height: '175.8125px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -529,7 +607,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_99.png"
                 width="175"
                 height="175"
-                alt="Today's Top Hits cover"
+                alt="Album art for Today's Top Hits"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -546,7 +624,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_108.png"
                 width="175"
                 height="175"
-                alt="RapCaviar cover"
+                alt="Album art for RapCaviar"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -563,7 +641,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_117.png"
                 width="175"
                 height="175"
-                alt="All Out 2010s cover"
+                alt="Album art for All Out 2010s"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -580,7 +658,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_126.png"
                 width="175"
                 height="175"
-                alt="Rock Classics cover"
+                alt="Album art for Rock Classics"
                 style={{ width: '175.796875px', height: '175.796875px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>
@@ -597,7 +675,7 @@ function SpotifyClone() {
                 src="/assets/figmaimages/figma_image_0_135.png"
                 width="176"
                 height="176"
-                alt="Chill Hits cover"
+                alt="Album art for Chill Hits"
                 style={{ width: '175.8125px', height: '175.8125px' }}
               />
               <h3 className="card-title" style={{ margin: '12px 0 0 0' }}>

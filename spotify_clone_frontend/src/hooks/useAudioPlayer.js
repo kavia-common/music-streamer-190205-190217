@@ -171,6 +171,28 @@ export function useAudioPlayer(initialTracks = [], initialIndex = 0) {
     audioRef.current.muted = muted;
   }, [muted]);
 
+  // PUBLIC_INTERFACE
+  const seekBySeconds = useCallback((deltaSeconds) => {
+    /** Seek relative to current time by provided delta in seconds. */
+    if (!Number.isFinite(deltaSeconds)) return;
+    seek((audioRef.current?.currentTime || 0) + deltaSeconds);
+  }, [seek]);
+
+  // PUBLIC_INTERFACE
+  const adjustVolumeBy = useCallback((deltaPercent) => {
+    /** Adjust volume by +/- deltaPercent (0..100 scale). */
+    if (!Number.isFinite(deltaPercent)) return;
+    const current = volume * 100;
+    const next = Math.min(100, Math.max(0, current + deltaPercent));
+    setVolumePercent(next / 100);
+  }, [volume, setVolumePercent]);
+
+  // Minimal runtime assertions in console (no framework)
+  if (process.env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.assert(volume >= 0 && volume <= 1, "Volume should be in [0,1]", volume);
+  }
+
   return {
     // state
     tracks,
@@ -194,5 +216,9 @@ export function useAudioPlayer(initialTracks = [], initialIndex = 0) {
     next,
     setVolumePercent,
     toggleMute,
+
+    // convenience
+    seekBySeconds,
+    adjustVolumeBy,
   };
 }
