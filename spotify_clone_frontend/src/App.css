@@ -38,6 +38,11 @@
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
+  /* Ensure the Spotify logo is never animated or transformed globally */
+  .logo-svg, .sb-logo {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
 .App-header {
