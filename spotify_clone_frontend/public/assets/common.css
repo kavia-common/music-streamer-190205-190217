@@ -1,0 +1,89 @@
+:root {
+  /* Color tokens (scaffolded) */
+  --color-ffffff: #ffffff;
+  --color-000000: #000000;
+  --color-bg: #121212;
+  --color-elev-1: #181818;
+  --color-elev-2: #1f1f1f;
+  --color-text: rgba(255,255,255,0.95);
+  --color-text-dim: rgba(255,255,255,0.7);
+  --color-link: rgba(255,255,255,0.9);
+  --color-secondary: rgba(255,255,255,0.6);
+  --color-border: rgba(255,255,255,0.1);
+  --color-line: rgba(255,255,255,0.3);
+  --color-primary: #1db954;
+
+  /* Typography tokens (approximate for referenced typo IDs) */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  --typo-306-family: var(--font-sans); --typo-306-size: 14px; --typo-306-weight: 600; --typo-306-line: 1.3;
+  --typo-307-family: var(--font-sans); --typo-307-size: 14px; --typo-307-weight: 700; --typo-307-line: 1.3;
+  --typo-308-family: var(--font-sans); --typo-308-size: 16px; --typo-308-weight: 700; --typo-308-line: 1.4;
+  --typo-309-family: var(--font-sans); --typo-309-size: 14px; --typo-309-weight: 400; --typo-309-line: 1.5;
+  --typo-310-family: var(--font-sans); --typo-310-size: 24px; --typo-310-weight: 700; --typo-310-line: 1.2;
+  --typo-311-family: var(--font-sans); --typo-311-size: 13px; --typo-311-weight: 600; --typo-311-line: 1.3;
+  --typo-312-family: var(--font-sans); --typo-312-size: 16px; --typo-312-weight: 700; --typo-312-line: 1.2;
+  --typo-313-family: var(--font-sans); --typo-313-size: 13px; --typo-313-weight: 400; --typo-313-line: 1.4;
+  --typo-314-family: var(--font-sans); --typo-314-size: 24px; --typo-314-weight: 700; --typo-314-line: 1.2;
+  --typo-315-family: var(--font-sans); --typo-315-size: 16px; --typo-315-weight: 700; --typo-315-line: 1.2;
+  --typo-316-family: var(--font-sans); --typo-316-size: 14px; --typo-316-weight: 700; --typo-316-line: 1.2;
+  --typo-317-family: var(--font-sans); --typo-317-size: 12px; --typo-317-weight: 600; --typo-317-line: 1.2;
+  --typo-318-family: var(--font-sans); --typo-318-size: 12px; --typo-318-weight: 400; --typo-318-line: 1.4;
+  --typo-319-family: var(--font-sans); --typo-319-size: 12px; --typo-319-weight: 400; --typo-319-line: 1.4;
+  --typo-320-family: var(--font-sans); --typo-320-size: 12px; --typo-320-weight: 600; --typo-320-line: 1.2;
+  --typo-321-family: var(--font-sans); --typo-321-size: 12px; --typo-321-weight: 600; --typo-321-line: 1.2;
+
+  /* Spacing */
+  --spacing-xs: 4px; --spacing-sm: 8px; --spacing-md: 16px; --spacing-lg: 24px; --spacing-xl: 32px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 10px rgba(0,0,0,0.3);
+
+  /* Radii */
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+}
+
+/* Reset and base */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+img { display: block; }
+
+/* Utility for icons crispness */
+.icon {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Common button style for style_149-like */
+.btn-accent {
+  background-color: var(--color-primary);
+  color: var(--color-000000);
+  border: none;
+  border-radius: var(--radius-xxl, 999px);
+  padding: 12px 24px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-accent:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.4), 0 0 0 4px rgba(29,185,84,0.6);
+  border-radius: 999px;
+}
+
+/* Fallback for gap when not supported (older browsers) */
+.card-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 31px;
+}
+.card-row > .card {
+  margin-right: 0; /* reset */
+}
+.card-row.gap-fallback > .card + .card {
+  margin-left: 31px;
+}

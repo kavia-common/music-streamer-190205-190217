@@ -1,0 +1,298 @@
+:root {
+  /* Ocean Professional tokens (fallbacks) while following Figma precise look */
+  --ocean-primary: #2563EB;
+  --ocean-secondary: #F59E0B;
+
+  /* layout variables */
+  --artboard-width: 1440px;
+  --artboard-height: 900px;
+  --sidebar-width: 241px;
+  --content-width: 1199px;
+  --section-gap: 31px;
+  --card-w: 207.8px;
+  --banner-h: 332px;
+}
+
+/* A11y utility */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* Screen container */
+.screen {
+  position: relative;
+  width: var(--artboard-width);
+  height: var(--artboard-height);
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0 auto;
+}
+
+/* Sidebar */
+.sidebar {
+  position: absolute;
+  background: var(--color-elev-1);
+}
+
+/* Make buttons accessible */
+.sb-row-btn {
+  background: transparent;
+  border: none;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  outline: none;
+}
+.sb-row-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-border) inset;
+  border-radius: 8px;
+}
+
+/* Typography smoothing */
+.sb-text, .sb-link, .auth-link, .sec-link, .card-title, .card-desc, .bt-title, .bt-sub {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Sidebar text */
+.sb-text {
+  color: var(--color-text-dim);
+  font-family: var(--font-sans);
+  font-size: var(--typo-311-size);
+  font-weight: var(--typo-311-weight);
+  line-height: calc(var(--typo-311-size) * var(--typo-311-line));
+  position: absolute;
+}
+.sb-text-strong {
+  color: var(--color-ffffff);
+  font-weight: 700;
+}
+
+/* Sidebar links */
+.sb-link {
+  color: var(--color-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--typo-318-size);
+  font-weight: var(--typo-318-weight);
+  line-height: calc(var(--typo-318-size) * var(--typo-318-line));
+  text-decoration: none;
+}
+.sb-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-border);
+  border-radius: 6px;
+}
+.sb-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Top bar */
+.topbar {
+  position: absolute;
+  background: var(--color-elev-2);
+}
+.top-controls { position: absolute; }
+.circle-btn {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  background: var(--color-elev-1);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+.circle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ocean-primary);
+}
+
+/* Auth */
+.auth-link {
+  position: static;
+  font-family: var(--typo-306-family);
+  font-size: var(--typo-306-size);
+  font-weight: var(--typo-306-weight);
+  color: var(--color-ffffff);
+  text-decoration: none;
+}
+.auth-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ocean-primary);
+  border-radius: 6px;
+}
+.btn-login {
+  background: transparent;
+  color: var(--color-ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  height: 48px;
+  padding: 0 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-login:hover { border-color: var(--color-line); }
+.btn-login:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ocean-primary); }
+
+/* Bottom promo bar */
+.bottombar {
+  position: absolute;
+  background: var(--color-elev-2);
+  border-top: 1px solid var(--color-border);
+}
+.progress {
+  position: absolute;
+  background: var(--color-primary);
+}
+.bt-title {
+  font-family: var(--typo-308-family);
+  font-size: var(--typo-308-size);
+  font-weight: var(--typo-308-weight);
+  line-height: calc(var(--typo-308-size) * var(--typo-308-line));
+  color: var(--color-ffffff);
+}
+.bt-sub {
+  font-family: var(--typo-309-family);
+  font-size: var(--typo-309-size);
+  font-weight: var(--typo-309-weight);
+  line-height: calc(var(--typo-309-size) * var(--typo-309-line));
+  color: var(--color-text-dim);
+}
+.btn-accent.btn-cta:focus-visible {
+  outline: none; box-shadow: 0 0 0 3px var(--ocean-secondary);
+}
+
+/* Main content */
+.content {
+  position: absolute;
+  background: transparent;
+}
+
+/* Header banner */
+.banner {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0));
+}
+
+/* Section */
+.section .sec-title {
+  font-family: var(--typo-310-family);
+  font-size: var(--typo-310-size);
+  font-weight: var(--typo-310-weight);
+  line-height: calc(var(--typo-310-size) * var(--typo-310-line));
+  color: var(--color-ffffff);
+}
+.section .sec-link {
+  font-family: var(--typo-311-family);
+  font-size: var(--typo-311-size);
+  font-weight: var(--typo-311-weight);
+  color: var(--color-link);
+  text-decoration: none;
+}
+.section .sec-link:focus-visible {
+  outline: none; box-shadow: 0 0 0 2px var(--ocean-primary);
+  border-radius: 6px;
+}
+
+/* Cards */
+.card {
+  width: var(--card-w);
+  background: var(--color-elev-1);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: inline-block; /* fallback when gap is not supported */
+  vertical-align: top;
+}
+.card-img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  -o-object-fit: cover; /* legacy Opera fallback */
+  aspect-ratio: 1 / 1;
+}
+.card-title {
+  font-family: var(--typo-312-family);
+  font-size: var(--typo-312-size);
+  font-weight: var(--typo-312-weight);
+  color: var(--color-ffffff);
+}
+.card-desc {
+  font-family: var(--typo-313-family);
+  font-size: var(--typo-313-size);
+  font-weight: var(--typo-313-weight);
+  color: var(--color-text-dim);
+}
+
+/* Logo (vector) */
+.logo-img { display: none; } /* ensure raster fallback is not used */
+.logo-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sb-logo {
+  /* matches Figma node 0:143 container dimensions already set inline; keep clean rendering */
+}
+
+/* Language button */
+.sb-language:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ocean-primary);
+}
+
+/* Responsive enhancements without breaking default artboard pixel accuracy */
+@media (max-width: 1440px) {
+  .screen {
+    width: 100%;
+    max-width: var(--artboard-width);
+    height: auto;
+    min-height: var(--artboard-height);
+    overflow-x: hidden;
+  }
+  /* allow bottom bar to stick if needed on small heights */
+  #bottombar {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* collapse spacing to prevent overflow */
+  .section .card-row {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: var(--section-gap);
+  }
+  .card {
+    width: calc(50% - var(--section-gap) / 2);
+    min-width: 280px;
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* optional sticky sidebar behavior - keep positions but enable overflow scrolling */
+  #sidebar {
+    position: sticky;
+    top: 0;
+  }
+  .section .card-row {
+    gap: 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 480px;
+  }
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .btn-accent, .btn-login, .circle-btn { transition: none !important; }
+}
